@@ -19,7 +19,7 @@ public class UnitSelector : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
             Unit unit = hit.collider.GetComponent<Unit>();
-            if (unit != null)
+            if (unit != null && unit != selectedUnit)
             {
                 if (unit != hoveredUnit)
                 {
@@ -50,17 +50,22 @@ public class UnitSelector : MonoBehaviour
 
             // ªı ¿Ø¥÷ º±≈√
             selectedUnit = hoveredUnit;
+            hoveredUnit = null;
             selectedUnit.Highlight(Color.green, true);
+        }
+        else
+        {
+
         }
     }
 
     void ResetHoverHighlight()
     {
-        if (hoveredUnit != null)
+        if (hoveredUnit != null && hoveredUnit != selectedUnit)
         {
             hoveredUnit.ResetHighlight();
-            hoveredUnit = null;
         }
+        hoveredUnit = null;
     }
 }
 

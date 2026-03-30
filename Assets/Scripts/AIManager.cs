@@ -38,15 +38,15 @@ public class AIManager : MonoBehaviour
                 continue;
             }
 
-            while (currentUnit.HasEnoughActionPoints(1))
+            while (currentUnit.HasEnoughActionPoints(1) && !currentUnit.IsSkippingTurn)
             {
                 // AI 유닛 행동 결정
                 DecideAndExecuteAction(currentUnit);
+
+                // 현재 유닛의 상태가 Idle로 돌아올 때까지 대기
+                yield return new WaitUntil(() => stateController.CurrentState is UnitIdleState);
             }
-
-            // 현재 유닛의 상태가 Idle로 돌아올 때까지 대기
-            yield return new WaitUntil(() => stateController.CurrentState is UnitIdleState);
-
+            currentUnit.IsSkippingTurn = false;
             currentAIUnitIndex++;
         }
 
@@ -64,6 +64,7 @@ public class AIManager : MonoBehaviour
         Unit closestEnemy = FindClosestEnemy(unit);
         if (closestEnemy == null)
         {
+            unit.IsSkippingTurn = true;
             stateController.SetState("Idle");
             return;
         }
@@ -76,7 +77,11 @@ public class AIManager : MonoBehaviour
         // 3. 사거리 내면 공격 상태로 전환
         if (distance <= unit.AttackRange && unit.HasEnoughActionPoints(1))
         {
+            //unit.UseActionPoint(1);
             stateController.SetState("Attack", closestEnemy);
+
+            //unit.IsSkippingTurn = true;
+            return;
         }
         else
         {
@@ -90,6 +95,8 @@ public class AIManager : MonoBehaviour
             }
             else
             {
+                Debug.Log("Can't find route to enemy unit.");
+                unit.IsSkippingTurn = true;
                 stateController.SetState("Idle");
             }
         }

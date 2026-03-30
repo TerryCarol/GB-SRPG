@@ -27,6 +27,7 @@ public class Unit : MonoBehaviour
     [SerializeField] private string unitName;
     [SerializeField] private float health = 100f;
     [SerializeField] private bool isCorpse = false;
+  
     [SerializeField] private float attackPower = 10f;
     [SerializeField] private float attackRange = 1f;
     [SerializeField] private float moveSpeed = 5f;
@@ -43,7 +44,8 @@ public class Unit : MonoBehaviour
     public Vector2Int currentPos;
     public Tile currentTile;
     public int MaxActionPoints = 2;
-    private int currentActionPoints;
+    public int currentActionPoints;
+    public bool IsSkippingTurn = false;
 
     private UnitStateController stateController;
     private UnitController actController;
@@ -172,6 +174,7 @@ public class Unit : MonoBehaviour
     {
         currentTile = tile;
         currentPos = tile.gridPos;
+        tile.isOccupied = true;
     }
 
     public Tile GetCurrentTile()
@@ -195,6 +198,16 @@ public class Unit : MonoBehaviour
         {
             Pathfinder pathfinder = new Pathfinder(FindObjectOfType<GridManager>());
             return pathfinder.FindReachableTiles(start, moveRange);
+        }
+    }
+
+    public void SetFaction(Faction faction)
+    {
+        this.faction = faction;
+        var facitonData = FactionManager.GetData(this.faction);
+        if(facitonData != null)
+        {
+            //팩션 관련 모디파이어 돌아갈 함수 자리
         }
     }
 

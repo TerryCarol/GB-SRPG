@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using static UnityEngine.UI.CanvasScaler;
 
 public class UnitController : MonoBehaviour
 {
@@ -108,6 +109,7 @@ public class UnitController : MonoBehaviour
         pathVisualizer?.ClearPath();
         path = null;
         currentPathIndex = 0;
+        unit.UseActionPoint(1);
         Debug.Log($"{unit.UnitName} has reached the destination.");
     }
 
@@ -171,10 +173,12 @@ public class UnitController : MonoBehaviour
             // 행동력 소모
             unit.UseActionPoint(1);
             Debug.Log($"{unit.UnitName} attacked {target.UnitName}.");
+            stateController.SetState("Idle");
         }
         else
         {
             Debug.Log($"{unit.UnitName} has insufficient action points.");
+            stateController.SetState("Idle");
         }
     }
 

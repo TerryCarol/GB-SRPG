@@ -52,10 +52,11 @@ public class EnemySpawner : MonoBehaviour
                 if (validTiles.Count > 0)
                 {
                     Tile tile = validTiles[Random.Range(0, validTiles.Count)];
-                    Vector3 spawnPosition = tile.transform.position + Vector3.up * 1.1f;
+                    Vector3 spawnPosition = new Vector3 (tile.transform.position.x * gridManager.gridSize, tile.transform.position.y, tile.transform.position.z * gridManager.gridSize) + Vector3.up * 0.5f;
 
                     unit.transform.position = spawnPosition;
                     unit.SetCurrentTile(tile);
+                    unit.SetFaction(Faction.Enemy);
 
                     Debug.Log($"{unitType} spawned at {tile.gridPos}");
 

@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
+using static UnityEngine.UI.CanvasScaler;
 
 public class InputManager : MonoBehaviour
 {
@@ -33,14 +35,26 @@ public class InputManager : MonoBehaviour
         // 유닛 선택 시 하이라이트
         if (selectedUnit != null)
         {
-            HighlightMoveableTiles(selectedUnit);
+            var controller = selectedUnit.GetComponent<UnitStateController>();
+
+            if (selectedUnit.HasEnoughActionPoints(1) && controller.CurrentState is UnitIdleState)
+            {
+                HighlightMoveableTiles(selectedUnit);
+            }
+            else
+            {
+                if (selectedUnit != null)
+                {
+                    ReleaseHighlightMoveableTiles(selectedUnit);
+                }
+            }
         }
         else
         {
             HighlightHoveredUnit();
         }
 
-        // 플레이어 턴 종료
+        // 플레이어 턴 종료 (현재는 Tab키)
         if (TurnManager.Instance.IsPlayerTurn() && Input.GetKeyDown(KeyCode.Tab))
         {
             TurnManager.Instance.EndPlayerTurn();
@@ -81,11 +95,39 @@ public class InputManager : MonoBehaviour
                     if (targetUnit != null && targetUnit.Faction != selectedUnit.Faction)
                     {
                         SetAttackState(targetUnit);
+                        return;
+                    }
+                    else if (targetUnit != null && targetUnit.Faction == selectedUnit.Faction)
+                    {
+                        Debug.Log("Tile is already Occupied by Friendly Unit.");
+                        return;
+                    }
+                    else
+                    {
+                        Debug.Log("Tile is already Occupied by Unknown Object.");
+                        return;
                     }
                 }
                 else
                 {
-                    SetMoveState(clickedTile);
+                    var stateController = selectedUnit.GetComponent<UnitStateController>();
+                    if (stateController.CurrentState is UnitIdleState)
+                    {
+                        List<Tile> movableTiles = selectedUnit.GetMovableTiles();
+                        if (movableTiles.Contains(clickedTile))
+                        {
+                            SetMoveState(clickedTile);
+                        }
+                        else
+                        {
+                            Debug.Log("Target tile is out of range!");
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("You cannot order new command while unit is already processing last command.");
+                    }
+                    return;
                 }
             }
         }
@@ -148,17 +190,29 @@ public class InputManager : MonoBehaviour
             Unit unit = hit.collider.GetComponent<Unit>();
             if (unit != null)
             {
-                if (unit != previousUnit)
+                if (unit != previousUnit && unit != selectedUnit)
+                {
+                    if(previousUnit != selectedUnit)
+                    {
+                        previousUnit?.ResetHighlight();
+                    }
+                    unit.Highlight(Color.white, true);
+                    previousUnit = unit;
+                }
+                else if(unit != previousUnit && unit == selectedUnit)
                 {
                     previousUnit?.ResetHighlight();
-                    unit.Highlight(Color.white, true);
                     previousUnit = unit;
                 }
             }
         }
         else
         {
-            if (previousUnit != null)
+            if(previousUnit == selectedUnit)
+            {
+                previousUnit = null;
+            }
+            else
             {
                 previousUnit.ResetHighlight();
                 previousUnit = null;
@@ -198,8 +252,8 @@ public class InputManager : MonoBehaviour
 
         tempUnit.SetCurrentTile(clickedTile);
         clickedTile.SetOnTileUnit(tempUnit);
-        tempUnit.transform.position = clickedTile.transform.position + new Vector3(0, 1.0f, 0);
-        tempUnit.Faction = Faction.Player;
+        tempUnit.transform.position = new Vector3(clickedTile.transform.position.x * gridManager.gridSize, clickedTile.transform.position.y, clickedTile.transform.position.z * gridManager.gridSize) + Vector3.up * 0.5f;
+        tempUnit.SetFaction(Faction.Player);
 
         Debug.Log($"Spawned player unit: {tempUnit.UnitName}");
         initialUnitSpawned = true;
