@@ -151,4 +151,34 @@ public class UnitIdleState : IUnitState
     {
         Debug.Log($"{unit.UnitName} : Exiting Idle STATE");
     }
+
+    public void HandleInput(Unit unit, Tile targetTile)
+    {
+        //공격
+        if (targetTile.isOccupied)
+        {
+            Unit target = targetTile.GetOnTileUnit();
+            if (target != null && target.Faction != unit.Faction)
+            {
+                unit.GetComponent<UnitStateController>().SetState("Attack", target);
+                return;
+            }
+            else
+            {
+                Debug.Log("Target tile is BRUH!");
+                return;
+            }
+        }
+
+        //이동
+        List<Tile> movableTiles = unit.GetMovableTiles();
+        if (movableTiles.Contains(targetTile))
+        {
+            unit.GetComponent<UnitStateController>().SetState("Move", targetTile);
+        }
+        else
+        {
+            Debug.Log("Target tile is out of range!");
+        }
+    }
 }

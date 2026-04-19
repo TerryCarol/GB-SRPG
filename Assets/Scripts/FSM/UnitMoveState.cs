@@ -1,4 +1,6 @@
 using Command;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class UnitMoveState : IUnitState
 {
@@ -22,12 +24,16 @@ public class UnitMoveState : IUnitState
 
     public void Execute(Unit unit)
     {
-        // 실행 도중 이동 중인지를 감시할 수 있음
+        // 실행 도중 이동 중인지 확인
     }
 
     public void Exit(Unit unit)
     {
         CommandInvoker.Instance.ClearCommand();
         //unit.GetComponent<UnitStateController>().IsBusy = false;
+    }
+    public void HandleInput(Unit unit, Tile targetTile)
+    {
+        Debug.Log("Unit is already MOVING.");
     }
 }

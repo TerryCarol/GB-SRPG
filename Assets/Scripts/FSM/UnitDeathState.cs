@@ -29,5 +29,9 @@ public class UnitDeathState : IUnitState
     {
         CommandInvoker.Instance.ClearCommand();
     }
+    public void HandleInput(Unit unit, Tile targetTile)
+    {
+        Debug.Log($"{unit.UnitName} Á×¾îÀÖÀ½.");
+    }
 }
 

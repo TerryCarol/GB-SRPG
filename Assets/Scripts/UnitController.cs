@@ -57,6 +57,12 @@ public class UnitController : MonoBehaviour
             // 경로 시각화
             pathVisualizer?.DrawPath(path);
 
+            // 애니메이터 트리거
+            if (animator != null)
+            {
+                animator.SetBool("IsMoving", true);
+            }
+
             // 이동 시작
             isMoving = true;
             currentPathIndex = 0;
@@ -91,7 +97,10 @@ public class UnitController : MonoBehaviour
         // 목표 타일에 도달
         if (Vector3.Distance(transform.position, targetPosition) < smoothArrivalThreshold)
         {
+            unit.GetCurrentTile().ResetOnTileUnit();
+            unit.GetCurrentTile().isOccupied = false;
             unit.SetCurrentTile(targetTile);
+            targetTile.SetOnTileUnit(unit);
             currentPathIndex++;
 
             if (currentPathIndex >= path.Count)
@@ -105,6 +114,12 @@ public class UnitController : MonoBehaviour
     private void EndMovement()
     {
         isMoving = false;
+        // 애니메이터 트리거
+        if (animator != null)
+        {
+            animator.SetBool("IsMoving", false);
+        }
+
         stateController.SetState("Idle");
         pathVisualizer?.ClearPath();
         path = null;
@@ -259,6 +274,7 @@ public class UnitController : MonoBehaviour
         if (unit.currentTile != null)
         {
             unit.currentTile.isOccupied = false;
+            unit.currentTile.ResetOnTileUnit();
         }
 
         if (!unit.IsCorpse)

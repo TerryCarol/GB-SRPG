@@ -38,5 +38,9 @@ public class UnitAttackState : IUnitState
         target = null; // 상태 변경 시 타겟 해제
         CommandInvoker.Instance.ClearCommand();
     }
+    public void HandleInput(Unit unit, Tile targetTile)
+    {
+        Debug.Log($"{unit.UnitName} 이미 행동 처리중.");
+    }
 }
 

@@ -41,11 +41,11 @@ public class EnemySpawner : MonoBehaviour
 
             if (unit != null)
             {
-                // 1. 양끝단 스폰 포인트 중 하나를 선택
+                // 양끝단 스폰 포인트 중 하나를 선택
                 //Vector2Int[] spawnPoints = gridManager.GetSpawnPoints();
                 //Vector2Int spawnPosition2D = spawnPoints[Random.Range(0, spawnPoints.Length)];
 
-                // 2. 그리드맵 전역 완전 랜덤 선택
+                // 그리드맵 전역 완전 랜덤 선택
                 List<Tile> validTiles = gridManager.GetAllFreeWalkableTiles();
 
                 // 2. 방식 스폰
@@ -56,6 +56,7 @@ public class EnemySpawner : MonoBehaviour
 
                     unit.transform.position = spawnPosition;
                     unit.SetCurrentTile(tile);
+                    tile.SetOnTileUnit(unit);
                     unit.SetFaction(Faction.Enemy);
 
                     Debug.Log($"{unitType} spawned at {tile.gridPos}");

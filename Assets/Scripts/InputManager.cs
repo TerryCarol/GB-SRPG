@@ -29,7 +29,17 @@ public class InputManager : MonoBehaviour
 
         if (Input.GetMouseButtonDown(1))
         {
-            DeselectUnit();
+            //DeselectUnit();
+
+            if (selectedUnit != null)
+            {
+                HandleRightClick();
+                
+            }
+            else
+            {
+                Debug.Log("선택유닛 없음, 우클릭동작 없음.");
+            }
         }
 
         // 유닛 선택 시 하이라이트
@@ -61,6 +71,78 @@ public class InputManager : MonoBehaviour
         }
     }
 
+    //구버전 인풋핸들
+    /*    private void HandleLeftClick()
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                Tile clickedTile = hit.collider.GetComponent<Tile>();
+                Unit clickedUnit = hit.collider.GetComponent<Unit>();
+
+                // 클릭된 유닛이 있을 경우 (유닛 선택)
+                if (clickedUnit != null)
+                {
+                    SelectUnit(clickedUnit);
+                    return;
+                }
+
+                // 타일 클릭 (이동 또는 공격)
+                if (clickedTile != null)
+                {
+                    if (selectedUnit == null)
+                    {
+                        if (!initialUnitSpawned)
+                        {
+                            SpawnInitialPlayerUnit(clickedTile);
+                        }
+                        Debug.Log("No unit selected.");
+                        return;
+                    }
+
+                    if (clickedTile.isOccupied)
+                    {
+                        Unit targetUnit = clickedTile.GetOnTileUnit();
+                        if (targetUnit != null && targetUnit.Faction != selectedUnit.Faction)
+                        {
+                            SetAttackState(targetUnit);
+                            return;
+                        }
+                        else if (targetUnit != null && targetUnit.Faction == selectedUnit.Faction)
+                        {
+                            Debug.Log("Tile is already Occupied by Friendly Unit.");
+                            return;
+                        }
+                        else
+                        {
+                            Debug.Log("Tile is already Occupied by Unknown Object.");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        var stateController = selectedUnit.GetComponent<UnitStateController>();
+                        if (stateController.CurrentState is UnitIdleState)
+                        {
+                            List<Tile> movableTiles = selectedUnit.GetMovableTiles();
+                            if (movableTiles.Contains(clickedTile))
+                            {
+                                SetMoveState(clickedTile);
+                            }
+                            else
+                            {
+                                Debug.Log("Target tile is out of range!");
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log("You cannot order new command while unit is already processing last command.");
+                        }
+                        return;
+                    }
+                }
+            }
+        }*/
     private void HandleLeftClick()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -69,66 +151,36 @@ public class InputManager : MonoBehaviour
             Tile clickedTile = hit.collider.GetComponent<Tile>();
             Unit clickedUnit = hit.collider.GetComponent<Unit>();
 
-            // 클릭된 유닛이 있을 경우 (유닛 선택)
-            if (clickedUnit != null)
+            // **임시** 플레이어 유닛 스폰 기능
+            if (!initialUnitSpawned && clickedTile != null)
             {
-                SelectUnit(clickedUnit);
+                SpawnInitialPlayerUnit(clickedTile);
                 return;
             }
 
-            // 타일 클릭 (이동 또는 공격)
+            if (clickedUnit != null)
+            {
+                SelectUnit(clickedUnit);
+            }
+            else
+            {
+                DeselectUnit();
+            }
+        }
+    }
+    private void HandleRightClick()
+    {
+        if (selectedUnit == null) return;
+
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            Tile clickedTile = hit.collider.GetComponent<Tile>();
+
             if (clickedTile != null)
             {
-                if (selectedUnit == null)
-                {
-                    if (!initialUnitSpawned)
-                    {
-                        SpawnInitialPlayerUnit(clickedTile);
-                    }
-                    Debug.Log("No unit selected.");
-                    return;
-                }
-
-                if (clickedTile.isOccupied)
-                {
-                    Unit targetUnit = clickedTile.GetOnTileUnit();
-                    if (targetUnit != null && targetUnit.Faction != selectedUnit.Faction)
-                    {
-                        SetAttackState(targetUnit);
-                        return;
-                    }
-                    else if (targetUnit != null && targetUnit.Faction == selectedUnit.Faction)
-                    {
-                        Debug.Log("Tile is already Occupied by Friendly Unit.");
-                        return;
-                    }
-                    else
-                    {
-                        Debug.Log("Tile is already Occupied by Unknown Object.");
-                        return;
-                    }
-                }
-                else
-                {
-                    var stateController = selectedUnit.GetComponent<UnitStateController>();
-                    if (stateController.CurrentState is UnitIdleState)
-                    {
-                        List<Tile> movableTiles = selectedUnit.GetMovableTiles();
-                        if (movableTiles.Contains(clickedTile))
-                        {
-                            SetMoveState(clickedTile);
-                        }
-                        else
-                        {
-                            Debug.Log("Target tile is out of range!");
-                        }
-                    }
-                    else
-                    {
-                        Debug.Log("You cannot order new command while unit is already processing last command.");
-                    }
-                    return;
-                }
+                var stateController = selectedUnit.GetComponent<UnitStateController>();
+                stateController.CurrentState.HandleInput(selectedUnit, clickedTile);
             }
         }
     }
